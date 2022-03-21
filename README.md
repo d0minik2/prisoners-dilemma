@@ -1,2 +1,2 @@
-# Prisone's dilemma
+# Prisoner's dilemma
  .
