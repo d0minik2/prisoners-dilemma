@@ -8,7 +8,7 @@ class Strategy(ABC):
     """Strategy for a battle"""
 
     name: str
-    colony: Colony
+    colony: colonies.Colony
 
     @abstractmethod
     def get_choice(self) -> int:
@@ -20,7 +20,7 @@ class RandomStrategy(Strategy):
     """Choice of that strategy is random"""
 
     name = "Random"
-    colony: Colony
+    colony: colonies.Colony
 
     def get_choice(self) -> int:
         return randint(0, 1)
@@ -31,7 +31,7 @@ class AlwaysZeroStrategy(Strategy):
     """Choice of that strategy is always 0"""
 
     name = "Always Zero"
-    colony: Colony
+    colony: colonies.Colony
 
     def get_choice(self) -> int:
         return 0
@@ -42,7 +42,7 @@ class AlwaysOneStrategy(Strategy):
     """Choice of that strategy is always 1"""
 
     name = "Always One"
-    colony: Colony
+    colony: colonies.Colony
 
     def get_choice(self) -> int:
         return 1
@@ -53,7 +53,7 @@ class StatisticalStrategy(Strategy):
     """Choice of that strategy is the most winning choice in current battle"""
 
     name = "Statistical"
-    colony: Colony
+    colony: colonies.Colony
 
     def get_choice(self) -> int:
         battle_course = self.colony.battle_course
@@ -93,7 +93,7 @@ class WeirdStrategy(Strategy):
     """Choice of that strategy is always diffrent than the last choice"""
 
     name = "Wierd"
-    colony: Colony
+    colony: colonies.Colony
 
     def get_choice(self) -> int:
         battle_course = self.colony.battle_course
@@ -111,7 +111,7 @@ class OpponentsLastStrategy(Strategy):
     """Returns the opponent's last choice"""
 
     name = "Opponent's Last"
-    colony: Colony
+    colony: colonies.Colony
 
     def get_choice(self) -> int:
         opponents_battle_course = self.colony.current_opponent.battle_course
@@ -129,7 +129,7 @@ class HackerStrategy(Strategy):
     """Returns the best choice"""
 
     name = "Hacker"
-    colony: Colony
+    colony: colonies.Colony
 
     def get_choice(self) -> int:
         opponents_strategy = self.colony.current_opponent.strategy

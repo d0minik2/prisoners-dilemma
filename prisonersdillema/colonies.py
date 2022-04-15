@@ -1,24 +1,6 @@
-from dataclasses import dataclass
 import strategies
-from abc import ABCMeta
-
-NUM_OF_ROUNDS = 20
-SCORES = (((0, 0), (0, 2)),
-          ((2, 0), (1, 1)))
-
-"""
-Table of scores
-
-                p1:         <- player 1
-           0         1      <- player's 1 choice
-p2:  0  ((s1, s2), (s1, s2))
-     1  ((s1, s2), (s1, s2))
-     ^
-     | player's 2 choice
-
-s1 - score for player 1
-s2 - score for player 2
-"""
+from config import *
+from dataclasses import dataclass
 
 
 class Colony(object):
@@ -41,7 +23,7 @@ class Colony(object):
         self.strategy = strategy(colony=self)
 
     def __str__(self) -> str:
-        return self.strategy.name
+        return f"Colony, {self.strategy.name} Strategy"
 
     def get_strategy(self) -> int:
         """Returns a strategy choice (0 or 1)"""
@@ -73,7 +55,7 @@ class Battle(object):
 
     colony1: Colony
     colony2: Colony
-    number_of_rounds: int = NUM_OF_ROUNDS
+    number_of_rounds: int = ROUNDS
     battle_course = []
 
     def get_round_result(self) -> tuple[int, int]:

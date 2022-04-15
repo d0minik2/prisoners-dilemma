@@ -1,4 +1,3 @@
-
 import colonies
 from strategies import *
 
@@ -226,7 +225,7 @@ def test():
         colonies.Colony(OpponentsLastStrategy)
     ]
 
-    tournament = PopulationGrowTournament(alive=players, rounds=1000)
+    tournament = PopulationGrowTournament(alive=players, rounds=10000)
     tournament.start()
     print("winner", tournament.get_winner())
     print("result", tournament.get_result())
