@@ -1,16 +1,21 @@
-from dataclasses import dataclass
+
 import colonies
 from strategies import *
+
 import random
+from dataclasses import dataclass
 from abc import ABC, abstractmethod
+from typing import List, Generator, Tuple
 import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
 
 class Tournament(ABC):
     """Colony tournament"""
 
-    alive: list
-    ranking: list
+    alive: List[colonies.Colony]
+    ranking: sorted
 
     @abstractmethod
     def get_winner(self) -> colonies.Colony:
@@ -29,21 +34,20 @@ class Tournament(ABC):
 class SingleEliminationTournament(Tournament):
     """Single Elimination Tournament"""
 
-    alive: list
-    result_function = None
-    ranking = []
+    alive: List[colonies.Colony]
+    ranking = sorted([], reverse=True)
 
-    def get_winner(self):
+    def get_winner(self) -> colonies.Colony:
         if not len(self.ranking):
             return self.start()[0]
         return self.ranking[0]
 
-    def get_result(self) -> list[colonies.Colony]:
+    def get_result(self) -> List[colonies.Colony]:
         if not len(self.ranking):
             return self.start()
         return self.ranking
 
-    def start(self) -> list[colonies.Colony]:
+    def start(self) -> List[colonies.Colony]:
         random.shuffle(self.alive)
 
         for colony1, colony2 in zip(
@@ -83,15 +87,14 @@ class SingleEliminationTournament(Tournament):
 class LeagueTournament(Tournament):
     """Tournament where every colony fights against every colony"""
 
-    alive: list
-    ranking = []
-    result_function = None
+    alive: List[colonies.Colony]
+    ranking = sorted([], reverse=True)
 
     points_for_winning = 2
     points_for_tie = 1
     points_for_loose = 0
 
-    def get_winner(self):
+    def get_winner(self) -> colonies.Colony:
         if not len(self.ranking):
             return self.start()[0]
         return self.ranking[0]
@@ -101,14 +104,13 @@ class LeagueTournament(Tournament):
             return self.start()
         return self.ranking
 
+    def pair_players(self) -> Generator[Tuple[colonies.Colony, colonies.Colony], None, None]:
+        for colony1_idx, colony1 in enumerate(self.alive):
+            for colony2 in self.alive[colony1_idx + 1:]:
+                yield colony1, colony2
+
     def start(self) -> list[colonies.Colony]:
-        pairings = []
-
-        for colony1 in range(len(self.alive)):
-            for colony2 in range(colony1 + 1, len(self.alive)):
-                pairings.append((self.alive[colony1], self.alive[colony2]))
-
-        for colony1, colony2 in pairings:
+        for colony1, colony2 in self.pair_players():
             battle = colonies.Battle(
                 colony1=colony1,
                 colony2=colony2
@@ -125,11 +127,11 @@ class LeagueTournament(Tournament):
                 colony1.tournament_score += self.points_for_tie
                 colony2.tournament_score += self.points_for_tie
 
-        self.ranking = list(sorted(
+        self.ranking = sorted(
             self.alive,
             key=lambda colony: colony.tournament_score,
             reverse=True
-        ))
+        )
         return self.ranking
 
 
@@ -138,24 +140,34 @@ class PopulationGrowTournament(Tournament):
     """Tournament where colonies grow, the larger population, the greater chance of fighting.
     Population is the total battle score"""
 
-    alive: list
-    ranking = []
-    round_history = {}
-    result_function = None
+    alive: List[colonies.Colony]
+    ranking = sorted([], reverse=True)
+
+    tournament_course = pd.DataFrame()
     rounds: int = 1000
 
-    def get_winner(self):
-        if not len(self.ranking):
+    def get_winner(self) -> colonies.Colony:
+        if self.tournament_course.empty:
             self.start()
+
         return self.ranking[0]
 
-    def get_result(self) -> dict[int, tuple[colonies.Colony, list[int]]]:
-        if not self.round_history:
+    def get_result(self) -> pd.DataFrame:
+        if self.tournament_course.empty:
             return self.start()
-        return self.round_history
+
+        return self.tournament_course
+
+    def show(self) -> None:
+        if self.tournament_course.empty:
+            self.start()
+
+        self.tournament_course.plot.area()
+        plt.show()
+
 
     def choose_colonies_to_fight(self) -> (colonies.Colony, colonies.Colony):
-        weights = [max(colony.total_battle_score, 1) for colony in self.alive]
+        weights = [max(colony.total_battle_score//2, 1) for colony in self.alive]
 
         colony1, colony2 = random.choices(
             self.alive,
@@ -172,14 +184,12 @@ class PopulationGrowTournament(Tournament):
 
         return colony1, colony2
 
-    def start(self) -> dict[int, tuple[colonies.Colony, list[int]]]:
-        for colony in self.alive:
-            if self.round_history.get(id(colony)) is None:
-                self.round_history[id(colony)] = (colony, [])
+    def start(self) -> pd.DataFrame:
 
+        self.tournament_course = pd.DataFrame({colony: np.zeros(self.rounds) for colony in self.alive})
         current_round = 0
 
-        while current_round <= self.rounds and len(self.alive) > 1:
+        while current_round < self.rounds and len(self.alive) > 1:
             current_round += 1
 
             colony1, colony2 = self.choose_colonies_to_fight()
@@ -190,20 +200,22 @@ class PopulationGrowTournament(Tournament):
             )
             battle_result = battle.get_battle_result()
 
-            for colony_id, colony in self.round_history.items():
-                self.round_history[colony_id][1].append(colony[0].total_battle_score)
+            self.tournament_course.values[current_round-1] = pd.DataFrame(
+                {colony: [colony.total_battle_score] for colony in self.tournament_course}
+            )
 
         self.ranking = sorted(
             self.alive,
             key=lambda colony: colony.total_battle_score,
             reverse=True
         )
-        return self.round_history
+        return self.tournament_course
 
 
-if __name__ == "__main__":
-    # creating example tournament
 
+
+def test():
+    """example tournament"""
     players = [
         colonies.Colony(StatisticalStrategy),
         colonies.Colony(WeirdStrategy),
@@ -214,7 +226,12 @@ if __name__ == "__main__":
         colonies.Colony(OpponentsLastStrategy)
     ]
 
-    tournament = LeagueTournament(alive=players)
+    tournament = PopulationGrowTournament(alive=players, rounds=1000)
     tournament.start()
-    print(tournament.get_winner())
-    print(tournament.get_result())
+    print("winner", tournament.get_winner())
+    print("result", tournament.get_result())
+    tournament.show()
+
+
+if __name__ == "__main__":
+    test()

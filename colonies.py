@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 import strategies
+from abc import ABCMeta
 
-NUM_OF_ROUNDS = 10
+NUM_OF_ROUNDS = 20
 SCORES = (((0, 0), (0, 2)),
           ((2, 0), (1, 1)))
 
@@ -20,7 +21,7 @@ s2 - score for player 2
 """
 
 
-class Colony:
+class Colony(object):
     """Colony (Prisoner)"""
 
     strategy: strategies.Strategy
@@ -35,9 +36,12 @@ class Colony:
 
     def __init__(
             self,
-            strategy: strategies.Strategy
+            strategy: strategies.StatisticalStrategy
     ):
         self.strategy = strategy(colony=self)
+
+    def __str__(self) -> str:
+        return self.strategy.name
 
     def get_strategy(self) -> int:
         """Returns a strategy choice (0 or 1)"""
@@ -64,7 +68,7 @@ class Colony:
 
 
 @dataclass
-class Battle:
+class Battle(object):
     """Leads the course of the battle between 2 colonies"""
 
     colony1: Colony

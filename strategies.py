@@ -7,6 +7,7 @@ from dataclasses import dataclass
 class Strategy(ABC):
     """Strategy for a battle"""
 
+    name: str
     colony: Colony
 
     @abstractmethod
@@ -18,6 +19,7 @@ class Strategy(ABC):
 class RandomStrategy(Strategy):
     """Choice of that strategy is random"""
 
+    name = "Random"
     colony: Colony
 
     def get_choice(self) -> int:
@@ -28,6 +30,7 @@ class RandomStrategy(Strategy):
 class AlwaysZeroStrategy(Strategy):
     """Choice of that strategy is always 0"""
 
+    name = "Always Zero"
     colony: Colony
 
     def get_choice(self) -> int:
@@ -38,6 +41,7 @@ class AlwaysZeroStrategy(Strategy):
 class AlwaysOneStrategy(Strategy):
     """Choice of that strategy is always 1"""
 
+    name = "Always One"
     colony: Colony
 
     def get_choice(self) -> int:
@@ -48,6 +52,7 @@ class AlwaysOneStrategy(Strategy):
 class StatisticalStrategy(Strategy):
     """Choice of that strategy is the most winning choice in current battle"""
 
+    name = "Statistical"
     colony: Colony
 
     def get_choice(self) -> int:
@@ -87,6 +92,7 @@ class StatisticalStrategy(Strategy):
 class WeirdStrategy(Strategy):
     """Choice of that strategy is always diffrent than the last choice"""
 
+    name = "Wierd"
     colony: Colony
 
     def get_choice(self) -> int:
@@ -104,6 +110,7 @@ class WeirdStrategy(Strategy):
 class OpponentsLastStrategy(Strategy):
     """Returns the opponent's last choice"""
 
+    name = "Opponent's Last"
     colony: Colony
 
     def get_choice(self) -> int:
@@ -119,8 +126,9 @@ class OpponentsLastStrategy(Strategy):
 
 @dataclass
 class HackerStrategy(Strategy):
-    """Returns opponents strategy"""
+    """Returns the best choice"""
 
+    name = "Hacker"
     colony: Colony
 
     def get_choice(self) -> int:
