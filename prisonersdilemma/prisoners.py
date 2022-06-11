@@ -1,10 +1,15 @@
-import strategies
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(os.path.dirname(__file__))
+
 from config import *
+import strategies
 from dataclasses import dataclass
 
 
-class Colony(object):
-    """Colony (Prisoner)"""
+
+class Prisoner(object):
+    """Prisoner"""
 
     strategy: strategies.Strategy
 
@@ -18,12 +23,12 @@ class Colony(object):
 
     def __init__(
             self,
-            strategy: strategies.StatisticalStrategy
+            strategy: object
     ):
-        self.strategy = strategy(colony=self)
+        self.strategy = strategy(prisoner=self)
 
-    def __str__(self) -> str:
-        return f"Colony, {self.strategy.name} Strategy"
+    def __repr__(self):
+        return f"Prisoner({self.strategy.name} Strategy)"
 
     def get_strategy(self) -> int:
         """Returns a strategy choice (0 or 1)"""
@@ -51,33 +56,33 @@ class Colony(object):
 
 @dataclass
 class Battle(object):
-    """Leads the course of the battle between 2 colonies"""
+    """Leads the course of the battle between 2 prisoners"""
 
-    colony1: Colony
-    colony2: Colony
+    prisoner1: Prisoner
+    prisoner2: Prisoner
     number_of_rounds: int = ROUNDS
     battle_course = []
 
     def get_round_result(self) -> tuple[int, int]:
-        """Returns a result of the battle for 2 colonies (colony1, colony2)"""
+        """Returns a result of the battle for 2 prisoners (prisoner1, prisoner2)"""
 
-        return SCORES[self.colony2.get_strategy()][self.colony1.get_strategy()]
+        return SCORES[self.prisoner2.get_strategy()][self.prisoner1.get_strategy()]
 
-    def get_battle_result(self) -> Colony or None:
-        """Leads the battle course and returns the result (result is the winning colony or None if it is a tie)"""
+    def get_battle_result(self) -> Prisoner or None:
+        """Leads the battle course and returns the result (result is the winning prisoner or None if it is a tie)"""
 
-        self.colony1.new_battle(self.colony2)
-        self.colony2.new_battle(self.colony1)
+        self.prisoner1.new_battle(self.prisoner2)
+        self.prisoner2.new_battle(self.prisoner1)
 
         for _ in range(self.number_of_rounds):
             result = self.get_round_result()
             self.battle_course.append(result)
 
-            self.colony1.submit_round_result(result[0])
-            self.colony2.submit_round_result(result[1])
+            self.prisoner1.submit_round_result(result[0])
+            self.prisoner2.submit_round_result(result[1])
 
-        if self.colony1.battle_score > self.colony2.battle_score:
-            return self.colony1
-        elif self.colony1.battle_score < self.colony2.battle_score:
-            return self.colony2
+        if self.prisoner1.battle_score > self.prisoner2.battle_score:
+            return self.prisoner1
+        elif self.prisoner1.battle_score < self.prisoner2.battle_score:
+            return self.prisoner2
         return None  # if it is a tie

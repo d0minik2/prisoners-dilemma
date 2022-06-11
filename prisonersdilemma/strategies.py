@@ -1,14 +1,17 @@
 from __future__ import annotations
+
+from config import *
 from abc import ABC, abstractmethod
 from random import randint
 from dataclasses import dataclass
+
 
 
 class Strategy(ABC):
     """Strategy for a battle"""
 
     name: str
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     @abstractmethod
     def get_choice(self) -> int:
@@ -20,7 +23,7 @@ class RandomStrategy(Strategy):
     """Choice of that strategy is random"""
 
     name = "Random"
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     def get_choice(self) -> int:
         return randint(0, 1)
@@ -31,7 +34,7 @@ class AlwaysZeroStrategy(Strategy):
     """Choice of that strategy is always 0"""
 
     name = "Always Zero"
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     def get_choice(self) -> int:
         return 0
@@ -42,7 +45,7 @@ class AlwaysOneStrategy(Strategy):
     """Choice of that strategy is always 1"""
 
     name = "Always One"
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     def get_choice(self) -> int:
         return 1
@@ -53,11 +56,11 @@ class StatisticalStrategy(Strategy):
     """Choice of that strategy is the most winning choice in current battle"""
 
     name = "Statistical"
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     def get_choice(self) -> int:
-        battle_course = self.colony.battle_course
-        battle_course_results = self.colony.battle_course_results
+        battle_course = self.prisoner.battle_course
+        battle_course_results = self.prisoner.battle_course_results
 
         assert battle_course is not None, "Battle course not found"
         assert battle_course_results is not None, "Battle course results not found"
@@ -93,10 +96,10 @@ class WeirdStrategy(Strategy):
     """Choice of that strategy is always diffrent than the last choice"""
 
     name = "Wierd"
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     def get_choice(self) -> int:
-        battle_course = self.colony.battle_course
+        battle_course = self.prisoner.battle_course
 
         assert battle_course is not None, "Battle course not found"
 
@@ -111,10 +114,10 @@ class OpponentsLastStrategy(Strategy):
     """Returns the opponent's last choice"""
 
     name = "Opponent's Last"
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     def get_choice(self) -> int:
-        opponents_battle_course = self.colony.current_opponent.battle_course
+        opponents_battle_course = self.prisoner.current_opponent.battle_course
 
         assert opponents_battle_course is not None, "Opponent's battle course not found"
 
@@ -129,10 +132,10 @@ class HackerStrategy(Strategy):
     """Returns the best choice"""
 
     name = "Hacker"
-    colony: colonies.Colony
+    prisoner: prisoner.Prisoner
 
     def get_choice(self) -> int:
-        opponents_strategy = self.colony.current_opponent.strategy
+        opponents_strategy = self.prisoner.current_opponent.strategy
 
         assert opponents_strategy is not None, "Opponent's strategy not found"
 
